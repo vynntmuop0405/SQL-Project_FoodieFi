@@ -20,3 +20,19 @@ INSERT INTO Transactions (ID, SENDER, RECEIVER, AMOUNT, TIME) VALUES
 (7, 'Bob', 'Greg',       50.00, '2025-07-02 09:00'),
 (8, 'Greg', 'Helen',     50.00, '2025-07-02 10:00'),
 (9, 'Helen', 'Ivy',      50.00, '2025-07-02 11:00');
+
+---
+-- Truy vết dòng tiền
+WITH trans_hierachy AS (
+SELECT id, sender, receiver, amount, time, 1 LEVEL, 
+	   CAST(Sender+ '->' +receiver AS VARCHAR(MAX)) AS path
+FROM Transactions WHERE Receiver = 'Alice'
+UNION ALL
+SELECT a.id, a.sender, a.receiver, a.amount, a.time, b.level+1 LEVEL, 
+	   b.Path + '->' + a.Receiver
+	   --b.path
+FROM transactions a
+JOIN trans_hierachy b ON a.sender = b.receiver
+WHERE b.Path NOT LIKE '%->' + a.Receiver + '%'
+)
+SELECT * FROM trans_hierachy
