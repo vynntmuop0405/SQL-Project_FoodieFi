@@ -26,7 +26,8 @@ INSERT INTO Transactions (ID, SENDER, RECEIVER, AMOUNT, TIME) VALUES
 WITH trans_hierachy AS (
 SELECT id, sender, receiver, amount, time, 1 LEVEL, 
 	   CAST(Sender+ '->' +receiver AS VARCHAR(MAX)) AS path
-FROM Transactions WHERE Receiver = 'Alice'
+FROM Transactions 
+WHERE Sender = 'Alice'
 UNION ALL
 SELECT a.id, a.sender, a.receiver, a.amount, a.time, b.level+1 LEVEL, 
 	   b.Path + '->' + a.Receiver
