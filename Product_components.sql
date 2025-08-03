@@ -34,3 +34,19 @@ INSERT INTO ProductComponents (ParentSKU, ChildSKU, Quantity) VALUES
 ('L', 'O', 2),
 ('O', 'P', 1);
 
+-- TÍNH SỐ LƯỢNG SKU Ở MỌI CẤP ĐỘ CON CẦN DÙNG
+WITH Product_hierachy AS (
+SELECT parent_sku, child_sku, quanity, 1 level,
+	   CAST(PARENT_SKU + '>' + CHILD_SKU AS VARCHAR(MAX)) path
+FROM product_components
+WHERE Parent_sku = 'BUNDLE_1'
+UNION ALL
+SELECT a.parent_sku, a.child_sku, a.quanity, b.level+1 level,
+	   CAST(b.path+ '->' + a.child_sku AS VARCHAR(MAX)) path
+FROM Product_components a
+JOIN Product_hierachy b ON a.parent_sku = b.child_sku
+)
+SELECT child_sku, level, SUM(quanity) Total_quanity
+FROM Product_hierachy 
+GROUP BY child_sku, level
+ORDER BY level
