@@ -39,7 +39,7 @@ WITH Product_hierachy AS (
 SELECT parent_sku, child_sku, quanity, 1 level,
 	   CAST(PARENT_SKU + '>' + CHILD_SKU AS VARCHAR(MAX)) path
 FROM product_components
-WHERE Parent_sku = 'BUNDLE_1'
+WHERE parent_sku NOT IN (SELECT DISTINCT child_sku FROM product_components)
 UNION ALL
 SELECT a.parent_sku, a.child_sku, a.quanity, b.level+1 level,
 	   CAST(b.path+ '->' + a.child_sku AS VARCHAR(MAX)) path
