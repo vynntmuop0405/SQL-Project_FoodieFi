@@ -18,3 +18,22 @@ INSERT INTO Transportation_route VALUES
 ('ORD002', 'Hub_ThuDauMot', 'DropPoint_DaiNam', 3),
 -- Đơn hàng ORD003 – đi thẳng
 ('ORD003', 'Warehouse_HCM', 'DropPoint_CuChi', 1);
+
+--xác định toàn bộ tuyến đường vận chuyển 
+    --của 1 đơn hàng từ kho chính đến điểm giao cuối.
+WITH TRANSPORT AS (
+SELECT order_id, from_location, to_location, step_no,
+		CAST(from_location+'->'+to_location AS VARCHAR(MAX)) AS route
+FROM Transportation_route
+WHERE order_id = 'ORD001' and from_location ='Warehouse_HCM'
+IN ( SELECT from_location FROM transportation_route
+
+UNION ALL
+SELECT a.order_id, a.from_location, a.to_location, b.step_no+1 step_no,
+		CAST(b.route+'->'+a.to_location AS VARCHAR(MAX)) as route
+FROM Transportation_route a
+JOIN TRANSPORT b ON a.order_id = b.order_id and a.from_location = b.to_location
+)
+SELECT TOP 1 order_id, route
+FROM TRANSPORT
+ORDER BY step_no DESC;
