@@ -44,3 +44,18 @@ INSERT INTO BOM VALUES
 ('Z3', 'Z4', 1),
 ('Z4', 'Z5', 1),
 ('Z5', 'Z6', 1);
+
+-- hãy viết truy vấn để tính toàn bộ nguyên vật liệu cần có khi sản xuất 1 sản phẩm A.
+
+WITH A_hierachy AS (
+SELECT parent_sku, child_sku, CAST(quanity AS INT) total_quanity, 1 level
+FROM BOM
+WHERE parent_sku = 'A'
+UNION ALL
+SELECT a.parent_sku, a.child_sku, CAST(a.quanity AS INT)*b.total_quanity total_quanity, b.level+1 level
+FROM BOM a
+JOIN A_hierachy b ON a.parent_sku = b.child_sku
+)
+SELECT child_sku, total_quanity, level 
+FROM A_hierachy 
+ORDER BY level
