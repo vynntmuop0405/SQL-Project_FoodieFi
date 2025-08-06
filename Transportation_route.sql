@@ -37,3 +37,28 @@ JOIN TRANSPORT b ON a.order_id = b.order_id and a.from_location = b.to_location
 SELECT TOP 1 order_id, route
 FROM TRANSPORT
 ORDER BY step_no DESC;
+
+-- xác định toàn bộ tuyến đường vận chuyển 
+    --của tất cả đơn hàng từ kho chính đến điểm giao cuối.
+WITH route AS (
+    SELECT order_id, from_location, to_location, 1 AS step,
+        CAST(from_location + '->' + to_location AS VARCHAR(MAX)) AS full_path
+    FROM Transportation_route
+    WHERE from_location IN (
+        SELECT from_location
+        FROM Transportation_route
+        EXCEPT
+        SELECT to_location
+        FROM Transportation_route)
+	UNION ALL
+	SELECT a.order_id, a.from_location, a.to_location, b.step+1 step,
+		   CAST(b.full_path+'->'+a.to_location AS VARCHAR(MAX)) AS full_path
+	FROM Transportation_route a
+	JOIN route b ON a.order_id=b.order_id AND a.from_location=b.to_location
+	)
+	SELECT order_id, full_path
+	FROM 
+	(SELECT order_id, full_path, ROW_NUMBER() OVER(PARTITION BY order_id ORDER BY step DESC) ranking
+	 FROM route) ranking_table
+	WHERE ranking = 1
+		
